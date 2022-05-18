@@ -28,7 +28,7 @@ for i in range(200):
     ls[0].append(x1)
     ls[1].append(x2)
     ls[2].append(x3)
-    y=x1*x1+x2-x3*x3
+    y=2*x1*x1+4*x2*1-5*x3*x3
     ls[3].append(y)
 for i in range(4):
     for j in range(200):

@@ -17,6 +17,10 @@ import pandas as pd
 
 
 sumzhongqun = 200
+jiaochagailv = 0.6 #交叉概率
+bianyigailv = 0.2#变异概率
+childmostfitness=[]#记录每一个子代的最优表达式
+most_fit=''#记录目前为止最优的表达式
 #----------------------------中缀表达式求值------------------------------------
 class Stack():#定义一个栈
     def __init__(self,):
@@ -114,69 +118,73 @@ class InversPolishCalculator(object):#逆波兰计算器
             
         
 #------------------读入数据并生成第一代表达式-----------------------------------
+
 data = pd.read_excel('data.xls')
-#x1=['1','2','3','4','5','6','7']
-#x2=['1','2','3','4','5','6','7']
-#x3=['1','2','3','4','5','6','7']
-#y=[3,6,9,12,15,18,21]
+
 data['x1']=data['x1'].apply(str)
 data['x2']=data['x2'].apply(str)
 data['x3']=data['x3'].apply(str)
 #data['y']=data['y'].apply(float)
 
-#print(data.x1[0])
-#print(data.dtypes)
 suanshu=['+','-','*','/']
+xishu=['1','2','3','4','5','6','7','8','9']
 first=[]
 for i in range(sumzhongqun):#后面要改成种群个数
     biaodashi=''
     for j in range(3):
         a=random.randint(0,1)
         b=random.randint(0,3)
+        c=random.randint(0,8)
         if(a==0):
-            biaodashi=biaodashi+'**1'
+            biaodashi=biaodashi+xishu[c]+'***1'
         elif(a==1):
-            biaodashi=biaodashi+'**2'
+            biaodashi=biaodashi+xishu[c]+'***2'
         biaodashi=biaodashi+suanshu[b]
     biaodashi=biaodashi[0:-1]
     first.append(biaodashi)
 #    print(biaodashi)
 #------------------读入数据并生成第一代表达式-----------------------------------
 
-bds=[[]for i in range(sumzhongqun)]
-for i in range(sumzhongqun):
+#----生成每一个表达式的种群并且计算每一个种群中每一个个体的数学表达式的值---------
     
-    for j in range(len(data.x1)):
-        shi=''
-        if(first[i][0:3]=='**2'):
-            shi=shi+data.x1[j]+'*'+data.x1[j]+first[i][3]
-        elif(first[i][0:3]=='**1'):
-            shi=shi+data.x1[j]+'*1'+first[i][3]
-        if(first[i][4:7]=='**2'):
-            shi=shi+data.x2[j]+'*'+data.x2[j]+first[i][7]
-        elif(first[i][4:7]=='**1'):
-            shi=shi+data.x2[j]+'*1'+first[i][7]
-        if(first[i][8:11]=='**2'):
-            shi=shi+data.x3[j]+'*'+data.x3[j]
-        elif(first[i][8:11]=='**1'):
-            shi=shi+data.x3[j]+'*1'
-        bds[i].append(shi)
-#        shi=data.x1[j]+first[i][0:3]
+def dairubiaodashi(first):
+    bds=[[]for i in range(sumzhongqun)]
+    for i in range(sumzhongqun):
+        
+        for j in range(len(data.x1)):
+            shi=''
+            if(first[i][2:5]=='**2'):
+                shi=shi+first[i][0:2]+data.x1[j]+'*'+data.x1[j]+first[i][5]
+            elif(first[i][2:5]=='**1'):
+                shi=shi+first[i][0:2]+data.x1[j]+'*1'+first[i][5]
+            if(first[i][8:11]=='**2'):
+                shi=shi+first[i][6:8]+data.x2[j]+'*'+data.x2[j]+first[i][11]
+            elif(first[i][8:11]=='**1'):
+                shi=shi+first[i][6:8]+data.x2[j]+'*1'+first[i][11]
+            if(first[i][14:]=='**2'):
+                shi=shi+first[i][12:14]+data.x3[j]+'*'+data.x3[j]
+            elif(first[i][14:]=='**1'):
+                shi=shi+first[i][12:14]+data.x3[j]+'*1'
+            bds[i].append(shi)
+
+    #        shi=data.x1[j]+first[i][0:3]
 
 #------------------求出对应表达式的值-------------------------------------------
-bds_value=[[]for i in range(sumzhongqun)]
-
-for i in range(sumzhongqun):
-    for j in range(len(data.x1)):
-        exspression = bds[i][j]
-        Calculator = InversPolishCalculator()
-        ret = Calculator.deal(exspression)
-        ret = float(ret)
-        bds_value[i].append(ret)
+def qiuzhi():
+    bds_value=[[]for i in range(sumzhongqun)]
+    
+    for i in range(sumzhongqun):
+        for j in range(len(data.x1)):
+            exspression = bds[i][j]
+            Calculator = InversPolishCalculator()
+            ret = Calculator.deal(exspression)
+            ret = float(ret)
+            bds_value[i].append(ret)
 #print(type(bds_value[0][0]))竟然输出class ‘str’,要转换类型
-#print(type(1))
-#print(bds_value[0][0]+1000)
+
+#----生成没一个表达式的种群并且计算每一个种群中每一个个体的数学表达式的值---------
         
+#-------------------------求适应度---------------------------------------------
 fitness=[]
 for i in range(sumzhongqun):
     fit=0
@@ -184,4 +192,96 @@ for i in range(sumzhongqun):
     for j in range(len(data.x1)):
         pingfanghe = pingfanghe+(bds_value[i][j]-data.y[j])**2
     fit=pingfanghe/sumzhongqun
+    fit=round(fit,2)
     fitness.append(fit)
+    
+childmostfitness.append(min(fitness))
+most_fit=first[fitness.index(min(fitness))]
+    
+    
+#轮盘选择
+
+max_fitness = int(max(fitness))
+min_fitness = int(min(fitness))
+newzhongqun=[]
+p=0
+for i in range(sumzhongqun):
+    if(len(newzhongqun)==200):
+        break
+    for j in range(p,sumzhongqun):
+        if(len(newzhongqun)==200):
+            break
+        fit = random.randint(min_fitness,max_fitness)
+        if(fitness[j]<fit):
+            xuanzhong=first[j]
+            newzhongqun.append(xuanzhong)
+            if(len(newzhongqun)==200):
+                break
+            
+#交叉
+
+
+for i in range(sumzhongqun):
+    tab=random.random()
+    if(tab<jiaochagailv):
+        print('进行交叉',i)
+        min=random.randint(0,16)
+        max=random.randint(0,16)
+        j=random.randint(0,199)
+        
+        t=min
+        if(min>max):
+            min=max
+            max=t
+        if(min==0 and max==16):
+            max=15
+        stri=newzhongqun[i][min:max]
+        strj=newzhongqun[j][min:max]
+        if(min!=0):
+            newzhongqun[i]=newzhongqun[i][0:min]+strj+newzhongqun[i][max:]
+            newzhongqun[i]=newzhongqun[j][0:min]+stri+newzhongqun[j][max:]
+        elif(min==0):
+            newzhongqun[i]=strj+newzhongqun[i][max:]
+            newzhongqun[i]=stri+newzhongqun[j][max:]
+            
+            
+            
+#变异
+for i in range(sumzhongqun):
+    tab=random.random()
+    if(tab<bianyigailv):
+        print('进行变异',i)
+        bianyiweizhi=random.randint(0,16)
+        if(bianyiweizhi==0 or bianyiweizhi==7 or bianyiweizhi==12):
+            b=str(random.randint(1,9))
+            if(bianyiweizhi==0):
+                newzhongqun[i]=b+newzhongqun[i][1:]
+            else:
+                newzhongqun[i]=newzhongqun[i][0:bianyiweizhi]+b+newzhongqun[i][bianyiweizhi+1:]
+        elif(bianyiweizhi==5 or bianyiweizhi==11):
+            b=suanshu[random.randint(0,3)]
+            newzhongqun[i]=newzhongqun[i][0:bianyiweizhi]+b+newzhongqun[i][bianyiweizhi+1:]
+        elif(bianyiweizhi==2 or bianyiweizhi==3 or bianyiweizhi==4):#可以利用数学公式求出，但这里太少就直接判断
+            cifang=random.randint(1,2)
+            if(cifang==1):
+                b='**1'
+                newzhongqun[i]=newzhongqun[i][0:2]+b+newzhongqun[i][5:]
+            else:
+                b='**2'
+                newzhongqun[i]=newzhongqun[i][0:2]+b+newzhongqun[i][5:]
+        elif(bianyiweizhi==8 or bianyiweizhi==9 or bianyiweizhi==10):#可以利用数学公式求出，但这里太少就直接判断
+            cifang=random.randint(1,2)
+            if(cifang==1):
+                b='**1'
+                newzhongqun[i]=newzhongqun[i][0:8]+b+newzhongqun[i][11:]
+            else:
+                b='**2'
+                newzhongqun[i]=newzhongqun[i][0:8]+b+newzhongqun[i][11:]
+        elif(bianyiweizhi==14 or bianyiweizhi==15 or bianyiweizhi==16):#可以利用数学公式求出，但这里太少就直接判断
+            cifang=random.randint(1,2)
+            if(cifang==1):
+                b='**1'
+                newzhongqun[i]=newzhongqun[i][0:14]+b
+            else:
+                b='**2'
+                newzhongqun[i]=newzhongqun[i][0:14]+b
