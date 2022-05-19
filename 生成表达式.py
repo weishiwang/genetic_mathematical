@@ -1,15 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Spyder 编辑器
-
-这是一个临时脚本文件。
-"""
-
-
-
-
-
-##使用curve_fit
+# -*- coding: utf-8
  
 import random
 import pandas as pd
@@ -21,6 +10,7 @@ jiaochagailv = 0.6 #交叉概率
 bianyigailv = 0.2#变异概率
 childmostfitness=[]#记录每一个子代的最优表达式
 most_fit=''#记录目前为止最优的表达式
+most_bdss=[]#记录每一子代的最优个体
 diedaishu=1000
 #----------------------------中缀表达式求值------------------------------------
 class Stack():#定义一个栈
@@ -205,6 +195,7 @@ fitness=qiushiyingdu(bds_value)
 childmostfitness.append(min(fitness))
 most_value=min(fitness)
 most_fit=first[fitness.index(min(fitness))]
+most_bdss.append(most_fit)
     
     
 #轮盘选择
@@ -298,7 +289,7 @@ def bianyi():
                     newzhongqun[i]=newzhongqun[i][0:14]+b
     return newzhongqun
 
-
+dai=0
 for i in range(diedaishu):
     newzhongqun=lunpanxuanze()
     newzhongqun= jiaocha()
@@ -310,22 +301,33 @@ for i in range(diedaishu):
     if(min(fitness)<most_value):
         most_value=min(fitness)
         most_fit=newzhongqun[fitness.index(min(fitness))]
+        most_bdss.append(most_fit)
+        dai=i
     print('第',i+1,'代：')
-    print(childmostfitness)
-    print(most_fit)
-    print(most_value)
+    print('最优解的变化：')
+    print(most_bdss)
+    print('本代最优解',newzhongqun[fitness.index(min(fitness))])
+    print('本代最优适应度',min(fitness))
+#    print(childmostfitness)
+    print('目前为止最优的解',most_fit)
+    print('目前为止最优的解的适应度',most_value)
+    if(most_value==0):
+        break
 shi=''
-if(first[i][2:5]=='**2'):
-    shi=shi+most_fit[0:2]+'x1'+'*'+data.x1[j]+most_fit[5]
+if(most_fit[2:5]=='**2'):
+    shi=shi+most_fit[0:2]+'x1^2'+most_fit[5]
 elif(most_fit[2:5]=='**1'):
-    shi=shi+most_fit[0:2]+'x1'+'*1'+most_fit[5]
+    shi=shi+most_fit[0:2]+'x1'+most_fit[5]
 if(most_fit[8:11]=='**2'):
-    shi=shi+most_fit[6:8]+'x2'+'*'+'x2'+most_fit[11]
+    shi=shi+most_fit[6:8]+'x2^2'+most_fit[11]
 elif(most_fit[8:11]=='**1'):
-    shi=shi+most_fit[6:8]+'x2'+'*1'+most_fit[11]
+    shi=shi+most_fit[6:8]+'x2'+most_fit[11]
 if(most_fit[14:]=='**2'):
-    shi=shi+most_fit[12:14]+'x3'+'*'+'x3'
+    shi=shi+most_fit[12:14]+'x3^2'
 elif(most_fit[14:]=='**1'):
-    shi=shi+most_fit[12:14]+'x3'+'*1'
-print('最后的表达式：')
+    shi=shi+most_fit[12:14]+'x3'
+print('======================================================================')
+print('在第',dai,'有最优的表达式：')
 print(shi)
+print('适应度(越小越优)：')
+print(most_value)
