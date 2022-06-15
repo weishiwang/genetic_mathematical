@@ -5,10 +5,11 @@ import pandas as pd
 
 sumzhongqun = 200
 jiaochagailv = 0.6 #交叉概率
-bianyigailv = 0.2#变异概率
+bianyigailv = 0.3#变异概率
 childmostfitness=[]#记录每一个子代的最优表达式
 most_fit=''#记录目前为止最优的表达式
 most_bdss=[]#记录每一子代的最优个体
+most_bds_value =[]#最优表达式的的y值
 diedaishu=1000
 #----------------------------中缀表达式求值------------------------------------
 class Stack():#定义一个栈
@@ -214,8 +215,9 @@ childmostfitness.append(min(fitness))
 most_value=min(fitness)
 most_fit=first[fitness.index(min(fitness))]
 most_bdss.append(most_fit)
-   
-   
+most_bds_value=bds_value[fitness.index(min(fitness))]
+
+
 #轮盘选择
 def lunpanxuanze():
     max_fitness = int(max(fitness))
@@ -323,6 +325,7 @@ def zuiyoubiaodashi(first):
     return shi
 
 dai=0
+bian =0
 for i in range(diedaishu):
     newzhongqun=lunpanxuanze()
     newzhongqun= jiaocha()
@@ -335,7 +338,11 @@ for i in range(diedaishu):
         most_value=min(fitness)
         most_fit=newzhongqun[fitness.index(min(fitness))]
         most_bdss.append(most_fit)
+        most_bds_value=bds_value[fitness.index(min(fitness))]
         dai=i
+        bian=0
+#    print('表达式的y值：',most_bds_value)
+    
     print('第',i+1,'代：')
     print('最优解的变化：')
     print(most_bdss)
@@ -344,11 +351,21 @@ for i in range(diedaishu):
 # print(childmostfitness)
     print('目前为止最优的解',most_fit)
     print('目前为止最优的解的适应度',most_value)
+#    优化下一代的种群
     if(most_value==0):
         break
+    bian=bian+1
+    if(bian>=30):
+        print('超过30次未改变更新种群')
+        newzhongqun=[]
+        for j in range(sumzhongqun):
+            newzhongqun.append(most_bdss[j%len(most_bdss)])
 shi=zuiyoubiaodashi(most_fit)
 print('======================================================================')
 print('在第',dai+1,'有最优的表达式：')
 print(shi)
 print('适应度(越小越优)：')
 print(most_value)
+
+duibi = pd.DataFrame({'实际y':data[col[len(col)-1]],'预测y':most_bds_value}, columns=['实际y','预测y'])
+print(duibi)
