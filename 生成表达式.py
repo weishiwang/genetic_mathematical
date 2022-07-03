@@ -114,15 +114,9 @@ class InversPolishCalculator(object):#逆波兰计算器
 
 data = pd.read_excel('data.xls')
 col = data.columns.to_list()#除了最后一项外其他全部是自变量
-#print((len(col)-1)*6-2)
+
 for i in range(len(col)-1):
-#    print(col[i])
-#    print(data[col[i]][0+3])
     data[col[i]]=data[col[i]].apply(str)
-#data['x1']=data['x1'].apply(str)
-#data['x2']=data['x2'].apply(str)
-#data['x3']=data['x3'].apply(str)
-#data['y']=data['y'].apply(float)
 
 suanshu=['+','-','*','/']
 xishu=['1','2','3','4','5','6','7','8','9']
@@ -141,9 +135,7 @@ for i in range(sumzhongqun):#后面要改成种群个数
         biaodashi=biaodashi+suanshu[b]
     biaodashi=biaodashi[0:-1]
     first.append(biaodashi)
-    
-newzhongqun = copy.deepcopy(first)
-# print(biaodashi)
+
 #------------------读入数据并生成第一代表达式-----------------------------------
 
 #----生成每一个表达式的种群并且计算每一个种群中每一个个体的数学表达式的值---------
@@ -168,26 +160,13 @@ def dairubiaodashi(first):
             elif(first[i][9+danxishu_long*(bianlianggeshu-1):]=='**1'):
                 shi=shi+str(int(first[i][0+danxishu_long*(bianlianggeshu-1):8+danxishu_long*(bianlianggeshu-1)], 2))+'*'+data[col[bianlianggeshu-1]][j]+'*1'
            
-#            shi=''
-#            if(first[i][2:5]=='**2'):
-#                shi=shi+first[i][0:2]+data.x1[j]+'*'+data.x1[j]+first[i][5]
-#            elif(first[i][2:5]=='**1'):
-#                shi=shi+first[i][0:2]+data.x1[j]+'*1'+first[i][5]
-#            if(first[i][8:11]=='**2'):
-#                shi=shi+first[i][6:8]+data.x2[j]+'*'+data.x2[j]+first[i][11]
-#            elif(first[i][8:11]=='**1'):
-#                shi=shi+first[i][6:8]+data.x2[j]+'*1'+first[i][11]
-#            if(first[i][14:]=='**2'):
-#                shi=shi+first[i][12:14]+data.x3[j]+'*'+data.x3[j]
-#            elif(first[i][14:]=='**1'):
-#                shi=shi+first[i][12:14]+data.x3[j]+'*1'
             bds[i].append(shi)
     return bds
 
     # shi=data.x1[j]+first[i][0:3]
 #
 ##------------------求出对应表达式的值-------------------------------------------
-bds=dairubiaodashi(first)#先让代码能够跑起来
+
 def qiuzhi(bds):
     bds_value=[[]for i in range(sumzhongqun)]
    
@@ -204,7 +183,7 @@ def qiuzhi(bds):
 ##----生成没一个表达式的种群并且计算每一个种群中每一个个体的数学表达式的值---------
 #       
 ##-------------------------求适应度---------------------------------------------
-bds_value=qiuzhi(bds)
+
 def qiushiyingdu(bds_value):
     fitness=[]
     for i in range(sumzhongqun):
@@ -236,7 +215,9 @@ def zuiyoubiaodashi(first):
    
     return shi
 
-
+newzhongqun = copy.deepcopy(first)
+bds=dairubiaodashi(first)#先让代码能够跑起来
+bds_value=qiuzhi(bds)
 fitness=qiushiyingdu(bds_value)
 childmostfitness.append(min(fitness))
 most_value=min(fitness)
